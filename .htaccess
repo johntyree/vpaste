@@ -1,0 +1,6 @@
+# Public domain
+
+AddHandler cgi-script .cgi
+Options +ExecCGI
+RewriteEngine on
+RewriteRule ^.*$ "index.cgi"
