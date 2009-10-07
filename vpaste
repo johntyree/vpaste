@@ -1,9 +1,9 @@
 #!/bin/bash
 uri="http://andy753421.ath.cx/vpaste/"
-if [ "$1" ]; then
-	out=$(curl -F "x=<$1" "$uri")
+if [ -f "$1" ]; then
+	out=$(curl -F "x=<$1" "$uri?$2")
 else
-	out=$(curl -F 'x=<-' "$uri")
+	out=$(curl -F 'x=<-' "$uri?$1")
 fi
 echo "$out"
 if [ -x "`which xclip 2>/dev/null`" -a "$DISPLAY" ]; then

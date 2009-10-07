@@ -13,8 +13,13 @@
 # GNU General Public License for more details.
 
 # Remove url codings form stdin
-function urldecode {
-	sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g; s/[,&]/ /g' | xargs echo -e
+function get_modeline {
+	modeline=$(
+		echo "$QUERY_STRING" | 
+		sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g; s/[,&]/ /g' |
+		xargs echo -e
+	)
+	echo "vim: $modeline"
 }
 
 # Extract an uploaded file from standard input
@@ -46,7 +51,8 @@ function do_print {
 	if [ -f "$1" ]; then
 		input="$1"
 	elif [ -f "db/$1" ]; then
-		input="db/$1" 
+		input="db/$1"
+		trim='1d' # sed command to remove cruft
 	else
 		echo "Status: 404"
 		start_text
@@ -54,22 +60,32 @@ function do_print {
 		return
 	fi
 
-	modeline="$(echo $QUERY_STRING | urldecode)"
 
-	if [ -z "$modeline" ]; then
-		start_text
-		cat "$input"
-	else
-		# I have some plugins in ~/.vim
-		#
-		# Run vimhi.sh in screen to trick it into thinking
-		# that it has a real terminal, not that we also have to
-		# set term=xterm-256color in vimrc
+	if [[ "$REQUEST_URI" == *'?'* ]]; then
+		# Create a temp file with the provided modeline
 		output="$(mktemp)"
+		tmp="$(mktemp)"
+		cat  "$input" >> "$tmp"
+		get_modeline  >> "$tmp"
+
+		# - I have some plugins in ~/.vim
+		# - Run ex in screen to trick it into thinking that it
+		#   has a real terminal, not that we also have to set
+		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
-		screen -D -m ./vimhi.sh "$input" "$output" "$modeline"
+		screen -D -m ex -u vimrc \
+			'+$d|'$trim     \
+			'+TOhtml'       \
+			"+sav! $output" \
+			'+qall!'        \
+			"$tmp"
+
 		start_html
 		cat "$output" 
+		rm "$tmp" "$output"
+	else
+		start_text
+		sed "$trim" "$input"
 	fi
 }
 
@@ -78,9 +94,9 @@ function do_print {
 function do_upload {
 	output="$(mktemp db/XXXXX)"
 	uri="$SCRIPT_URI$(basename "$output")"
-	cut_file "$1" > "$output"
+	(get_modeline; cut_file "$1") > "$output"
 	start_text
-	echo "$uri"
+	echo "$uri${QUERY_STRING:+"?"}"
 }
 
 # Default index page
@@ -101,8 +117,7 @@ cat - <<EOF
 		h4 { margin:1em 0 0 0; }
 		p,ul,dl,dd,pre,blockquote { margin:0 0 0 2em; }
 		dt { font-weight:bold; padding:0.5em 0 0 0; }
-		blockquote { height:2pc; width:30em; font-size:smaller; overflow:hidden; }
-		blockquote:hover { height:auto; width:auto; }
+		blockquote { width:50em; font-size:small; }
 		</style>
 	</head>
 	<body>
@@ -110,10 +125,14 @@ cat - <<EOF
 		<p>vpaste: Vim enabled pastebin</p>
 
 		<h4>SYNOPSIS</h4>
-		<pre>&lt;command&gt; | curl -F 'x=<-' $SCRIPT_URI</pre>
+		<pre> vpaste file [option=value,..]</pre>
+		<pre> &lt;command&gt; | vpaste [option=value,..]</pre>
+		<br>
+		<pre> &lt;command&gt; | curl -F 'x=<-' $SCRIPT_URI[?option=value,..]</pre>
 
 		<h4>DESCRIPTION</h4>
-		<p>Add <b>?option[=value] ..</b> to make your text a rainbow.</p>
+		<p>Add <b>?[option[=value],..]</b> to make your text a rainbow.</p>
+		<p>Options specified when uploading are used as defaults.</p>
 
 		<h4>OPTIONS</h4>
 		<dl>
@@ -129,16 +148,12 @@ cat - <<EOF
 		<dd>See :help modeline for more information</dd>
 		</dl>
 
-		<h4>FILETYPES</h4>
-		<blockquote><u>[+]</u> $filetypes</blockquote>
-
 		<h4>SOURCE</h4>
 		<ul>
 		<li><a href="vpaste?ft=sh">vpaste</a>
 		<li><a href="index.cgi?ft=sh">index.cgi</a>
-		<li><a href="vimhi.sh?ft=sh">vimhi.sh</a>
-		<li><a href="vimrc?ft=vim">vimrc</a>
-		<li><a href="htaccess?ft=apache">htaccess</a>
+		    <a href="vimrc?ft=vim">vimrc</a>
+		    <a href="htaccess?ft=apache">htaccess</a>
 		<li><a href="2html-et.patch?ft=diff">2html-et.patch</a>
 		</ul>
 
@@ -146,6 +161,9 @@ cat - <<EOF
 		<ul>$(for uri in ${uploads[@]}; do
 			echo "<li><a href='$uri'>$uri</a>"
 		done)</ul>
+
+		<h4>FILETYPES</h4>
+		<blockquote>$filetypes</blockquote>
 	</body>
 </html>
 EOF
