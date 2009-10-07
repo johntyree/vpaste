@@ -59,8 +59,7 @@ function do_print {
 		# Create a temp file with the provided modeline
 		output="$(mktemp)"
 		tmp="$(mktemp)"
-		cat  "$input" >> "$tmp"
-		get_modeline  >> "$tmp"
+		sed "1a$(get_modeline)" "$input" > "$tmp"
 
 		# - I have some plugins in ~/.vim
 		# - Run ex in screen to trick it into thinking that it
@@ -68,7 +67,7 @@ function do_print {
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
 		screen -D -m ex -u vimrc \
-			'+$d|'$trim     \
+			'+2d|'$trim     \
 			'+%s///g'     \
 			'+TOhtml'       \
 			"+sav! $output" \
