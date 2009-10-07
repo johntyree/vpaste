@@ -35,14 +35,8 @@ function cut_file {
 }
 
 # Print out a generic header
-function start_html {
-	echo "Content-Type: text/html; charset=UTF-8"
-	echo
-}
-
-# Print out a generic header
-function start_text {
-	echo "Content-Type: text/plain; charset=UTF-8"
+function header {
+	echo "Content-Type: $1; charset=UTF-8"
 	echo
 }
 
@@ -54,8 +48,8 @@ function do_print {
 		input="db/$1"
 		trim='1d' # sed command to remove cruft
 	else
-		echo "Status: 404"
-		start_text
+		echo "Status: 404 Not Found"
+		header text/plain
 		echo "File '$1' not found"
 		return
 	fi
@@ -75,16 +69,17 @@ function do_print {
 		HOME=/home/andy \
 		screen -D -m ex -u vimrc \
 			'+$d|'$trim     \
+			'+%s///g'     \
 			'+TOhtml'       \
 			"+sav! $output" \
 			'+qall!'        \
 			"$tmp"
 
-		start_html
+		header text/html
 		cat "$output" 
 		rm "$tmp" "$output"
 	else
-		start_text
+		header text/plain
 		sed "$trim" "$input"
 	fi
 }
@@ -93,10 +88,12 @@ function do_print {
 # Upload handler
 function do_upload {
 	output="$(mktemp db/XXXXX)"
-	uri="$SCRIPT_URI$(basename "$output")"
+	uri="$SCRIPT_URI$(basename "$output")${QUERY_STRING:+"?"}"
 	(get_modeline; cut_file "$1") > "$output"
-	start_text
-	echo "$uri${QUERY_STRING:+"?"}"
+	echo "Status: 302 Found"
+	echo "Location: $uri"
+	header text/plain
+	echo "$uri"
 }
 
 # Default index page
@@ -107,7 +104,7 @@ filetypes=$(
 )
 uploads=$(ls -t db | head -n 5 | sed "s!^!$SCRIPT_URI!")
 
-start_html
+header text/html
 cat - <<EOF
 <html>
 	<head>
@@ -121,6 +118,21 @@ cat - <<EOF
 		</style>
 	</head>
 	<body>
+		<form id="form" method="post" action="?" enctype="multipart/form-data">
+		<textarea name="text" style="width:100%; height:20em;"></textarea>
+		<br>
+		<select onchange="document.getElementById('form').action =
+			document.location + '?ft=' + this.value;">
+		<option value="" selected="selected" disabled="disabled">Filetype</option>
+		<option value="">None</option>
+		$(for ft in $filetypes; do
+			echo "<option>$ft</option>"
+		done)
+		</select>
+		<input type="submit" value="Paste">
+		</form>
+		<br>
+
 		<h4>NAME</h4>
 		<p>vpaste: Vim enabled pastebin</p>
 
@@ -137,7 +149,7 @@ cat - <<EOF
 		<h4>OPTIONS</h4>
 		<dl>
 		<dt>ft, filetype={filetype}</dt>
-		<dd>A filetype to use for highlighting, see FILETYPES</dd>
+		<dd>A filetype to use for highlighting, see above menu for supported types</dd>
 		<dt>bg, background={light|dark}</dt>
 		<dd>Background color to use for the page</dd>
 		<dt>et, expandtab</dt>
@@ -161,9 +173,6 @@ cat - <<EOF
 		<ul>$(for uri in ${uploads[@]}; do
 			echo "<li><a href='$uri'>$uri</a>"
 		done)</ul>
-
-		<h4>FILETYPES</h4>
-		<blockquote>$filetypes</blockquote>
 	</body>
 </html>
 EOF
@@ -171,12 +180,11 @@ EOF
 
 # Main
 pathinfo="${SCRIPT_URL/*vpaste\/}"
-boundary="${CONTENT_TYPE/*boundary\=/}"
 
 if [ "$pathinfo" ]; then
 	do_print "$pathinfo"
 elif [ "$CONTENT_TYPE" ]; then
-	do_upload "$boundary"
+	do_upload ${CONTENT_TYPE/*boundary\=/}
 else
 	do_help
 fi
