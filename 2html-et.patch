@@ -1,0 +1,33 @@
+--- /usr/share/vim/vim72/syntax/2html.vim	2009-06-16 06:24:31.000000000 +0000
++++ /tmp/2html.vim	2009-10-06 23:05:11.000000000 +0000
+@@ -192,7 +192,6 @@
+ let s:old_report = &report
+ let s:old_search = @/
+ set notitle noicon
+-setlocal et
+ set report=1000000
+ 
+ " Split window to create a buffer with the HTML file.
+@@ -393,12 +392,16 @@
+ 
+       " Expand tabs
+       let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
+-      let idx = stridx(s:expandedtab, "\t")
+-      while idx >= 0
+-	let i = &ts - ((idx + s:startcol - 1) % &ts)
+-	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
+-	let idx = stridx(s:expandedtab, "\t")
+-      endwhile
++      if &et
++        let idx = stridx(s:expandedtab, "\t")
++        while idx >= 0
++          let i = &ts - ((idx + s:startcol - 1) % &ts)
++          let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
++          let idx = stridx(s:expandedtab, "\t")
++        endwhile
++      else
++        setlocal isprint+=9
++      endif
+ 
+       " Output the text with the same synID, with class set to {s:id_name}
+       let s:id = synIDtrans(s:id)
