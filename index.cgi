@@ -178,7 +178,7 @@ EOF
 }
 
 # Main
-pathinfo="${SCRIPT_URL/*vpaste\/}"
+pathinfo="${SCRIPT_URL/*\/}"
 
 if [ "$pathinfo" ]; then
 	do_print "$pathinfo"
