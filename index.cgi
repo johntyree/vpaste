@@ -140,6 +140,9 @@ cat - <<EOF
 		<pre> &lt;command&gt; | vpaste [option=value,..]</pre>
 		<br>
 		<pre> &lt;command&gt; | curl -F 'x=<-' $SCRIPT_URI[?option=value,..]</pre>
+		<br>
+		<pre>:map vp :exec "w !vpaste ft=".&ft&lt;CR&gt;</pre>
+		<pre>:vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&ft&lt;CR&gt;</pre>
 
 		<h4>DESCRIPTION</h4>
 		<p>Add <b>?[option[=value],..]</b> to make your text a rainbow.</p>
