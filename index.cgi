@@ -106,7 +106,7 @@ filetypes=$(
 	sed -n '/^\(syntax\|manual\|synload\|2html\|colortest\|hitest\).vim$/d; s/.vim$//p' |
 	sort | uniq
 )
-uploads=$(ls -t db | head -n 5 | sed "s!^!$url!")
+uploads=$(ls -t db | head -n 5)
 
 header text/html
 cat - <<EOF
@@ -123,6 +123,7 @@ cat - <<EOF
 			blockquote,dd,dl,p,pre,ul { margin:0 0 0 2em; }
 			dt { font-weight:bold; padding:0.5em 0 0 0; }
 			blockquote { width:50em; font-size:small; }
+			span { font-family:monospace; }
 		</style>
 	</head>
 	<body>
@@ -190,8 +191,12 @@ cat - <<EOF
 		</ul>
 
 		<h4>LATEST UPLOADS</h4>
-		<ul>$(for uri in ${uploads[@]}; do
-			echo "<li><a href='$uri'>$uri</a></li>"
+		<ul>$(for upload in ${uploads[@]}; do
+			echo -n "<li>"
+			echo -n "<span>$upload</span> "
+			echo -n "<a href='$upload'>text</a> "
+			echo -n "<a href='$upload?'>rainbow</a>"
+			echo "</li>"
 		done)</ul>
 	</body>
 </html>
