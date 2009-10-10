@@ -92,7 +92,13 @@ function do_print {
 function do_upload {
 	output="$(mktemp db/XXXXX)"
 	uri="$url$(basename "$output")${QUERY_STRING:+"?"}"
-	(get_modeline; cut_file "$1") > "$output"
+	text=$(cut_file "$1")
+	if [ -z "$text" ]; then
+		header text/plain
+		echo "No text pasted"
+		exit
+	fi
+	(get_modeline; echo "$text") > "$output"
 	echo "Status: 302 Found"
 	echo "Location: $uri"
 	header text/plain
