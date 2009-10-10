@@ -69,7 +69,8 @@ function do_print {
 		HOME=/home/andy \
 		screen -D -m ex -nXZ -i NONE -u vimrc \
 			'+set bexpr= fde= fdt= fex= inde= inex= key= pa= pexpr' \
-			'+set iconstring= ruf= stl= tal= titlestring=' \
+			'+set iconstring= ruf= stl= tal=' \
+			"+set titlestring=$1\ -\ vpaste.net" \
 			'+set noml'     \
 			'+2d|'$trim     \
 			'+%s/\r//g'     \
@@ -192,7 +193,7 @@ cat - <<EOF
 		<li><a href="index.cgi?ft=sh">index.cgi</a>
 		    <a href="vimrc?ft=vim">vimrc</a>
 		    <a href="htaccess?ft=apache">htaccess</a></li>
-		<li><a href="2html-et.patch?ft=diff">2html-et.patch</a></li>
+		<li><a href="2html.patch?ft=diff">2html.patch</a></li>
 		<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a></li>
 		</ul>
 

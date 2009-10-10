@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /$
+Allow: /2html.patch
+Allow: /htaccess
+Allow: /index.cgi
+Allow: /vimrc
+Allow: /vpaste
+Disallow: /
+Sitemap: http://vpaste.net/sitemap.xml
