@@ -30,8 +30,9 @@ function cut_file {
 		st==2  {print \$0};
 		/$1--/ {st=0};
 		/^\\r$/ && st==1 {st=2};
-	" | head -c -2
+	" | head -c -2 | head -c $((128*1024))
 	# Remove trailing ^M's that come with CGI
+	# Limit size to 128K
 }
 
 # Print out a generic header
@@ -66,7 +67,7 @@ function do_print {
 		#   has a real terminal, not that we also have to set
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
-		screen -D -m ex -u vimrc \
+		screen -D -m ex -Z -u vimrc \
 			'+2d|'$trim     \
 			'+%s///g'     \
 			'+TOhtml'       \
@@ -107,6 +108,7 @@ header text/html
 cat - <<EOF
 <html>
 	<head>
+		<title>vpaste.net - Vim based pastebin</title>
 		<style>
 		* { margin:0; padding:0; }
 		body { margin:1em; }
@@ -133,7 +135,7 @@ cat - <<EOF
 		<br>
 
 		<h4>NAME</h4>
-		<p>vpaste: Vim enabled pastebin</p>
+		<p>vpaste: Vim based pastebin</p>
 
 		<h4>SYNOPSIS</h4>
 		<pre> vpaste file [option=value,..]</pre>
@@ -169,6 +171,7 @@ cat - <<EOF
 		    <a href="vimrc?ft=vim">vimrc</a>
 		    <a href="htaccess?ft=apache">htaccess</a>
 		<li><a href="2html-et.patch?ft=diff">2html-et.patch</a>
+		<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a>
 		</ul>
 
 		<h4>LATEST UPLOADS</h4>
