@@ -25,12 +25,12 @@ function get_modeline {
 # Extract an uploaded file from standard input
 # $1 is the boundary delimiter for the file
 function cut_file {
-	awk "
-		/--$1/ {st=1};
-		st==2  {print \$0};
-		/$1--/ {st=0};
-		/^\\r$/ && st==1 {st=2};
-	" | head -c -2 | head -c $((128*1024))
+	awk -v "bnd=$1" '{
+		if ($0 == "--"bnd"\r")     { st=1;     }
+		if ($0 == "--"bnd"--\r")   { st=0;     }
+		if (st == 2)               { print $0; }
+		if ($0 == "\r" && st == 1) { st=2;     }
+	}' | head -c -2 | head -c $((128*1024))
 	# Remove trailing ^M's that come with CGI
 	# Limit size to 128K
 }
@@ -199,7 +199,7 @@ EOF
 }
 
 # Main
-url="http://$HTTP_HOST/$SCRIPT_URI"
+url="http://$HTTP_HOST${REQUEST_URI/\?*}"
 pathinfo="${REQUEST_URI/*\/}"
 pathinfo="${pathinfo/\?*}"
 
