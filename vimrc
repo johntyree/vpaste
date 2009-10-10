@@ -2,7 +2,6 @@
 
 set nocompatible
 set encoding=utf-8
-set foldtext=getline(v:foldstart)
 set term=xterm-256color
 
 filetype plugin indent on

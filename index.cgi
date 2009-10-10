@@ -12,7 +12,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# Remove url codings form stdin
+# Remove url codings from stdin
 function get_modeline {
 	modeline=$(
 		echo "$QUERY_STRING" | 
@@ -64,7 +64,7 @@ function do_print {
 
 		# - I have some plugins in ~/.vim
 		# - Run ex in screen to trick it into thinking that it
-		#   has a real terminal, not that we also have to set
+		#   has a real terminal, note that we also have to set
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
 		screen -D -m ex -nXZ -i NONE -u vimrc \
@@ -72,7 +72,7 @@ function do_print {
 			'+set iconstring= ruf= stl= tal= titlestring=' \
 			'+set noml'     \
 			'+2d|'$trim     \
-			'+%s///g'     \
+			'+%s/\r//g'     \
 			'+TOhtml'       \
 			"+sav! $output" \
 			'+qall!'        \
@@ -90,14 +90,14 @@ function do_print {
 
 # Upload handler
 function do_upload {
-	output="$(mktemp db/XXXXX)"
-	uri="$url$(basename "$output")${QUERY_STRING:+"?"}"
 	text=$(cut_file "$1")
 	if [ -z "$text" ]; then
 		header text/plain
 		echo "No text pasted"
 		exit
 	fi
+	output="$(mktemp db/XXXXX)"
+	uri="$url$(basename "$output")${QUERY_STRING:+"?"}"
 	(get_modeline; echo "$text") > "$output"
 	echo "Status: 302 Found"
 	echo "Location: $uri"

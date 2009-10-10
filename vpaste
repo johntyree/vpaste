@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Copyright (C) 2009 Andy Spencer - Public domain
+
 uri="http://vpaste.net/"
 if [ -f "$1" ]; then
 	out=$(curl -s -F "x=<$1" "$uri?$2")

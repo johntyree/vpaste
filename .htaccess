@@ -1,4 +1,4 @@
-# Public domain
+# Copyright (C) 2009 Andy Spencer - Public domain
 
 AddHandler cgi-script .cgi
 Options +ExecCGI
