@@ -106,22 +106,25 @@ uploads=$(ls -t db | head -n 5 | sed "s!^!$url!")
 
 header text/html
 cat - <<EOF
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head>
 		<title>vpaste.net - Vim based pastebin</title>
-		<style>
-		* { margin:0; padding:0; }
-		body { margin:1em; }
-		h4 { margin:1em 0 0 0; }
-		p,ul,dl,dd,pre,blockquote { margin:0 0 0 2em; }
-		dt { font-weight:bold; padding:0.5em 0 0 0; }
-		blockquote { width:50em; font-size:small; }
+		<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+		<style type="text/css">
+			* { margin:0; padding:0; }
+			body { margin:1em; }
+			h4 { margin:1em 0 0 0; }
+			blockquote,dd,dl,p,pre,ul { margin:0 0 0 2em; }
+			dt { font-weight:bold; padding:0.5em 0 0 0; }
+			blockquote { width:50em; font-size:small; }
 		</style>
 	</head>
 	<body>
 		<form id="form" method="post" action="?" enctype="multipart/form-data">
-		<textarea name="text" style="width:100%; height:20em;"></textarea>
-		<br>
+		<div style="margin:0 0 1.5em 0;">
+		<textarea name="text" cols="80" rows="25" style="width:100%; height:20em;"></textarea>
 		<select onchange="document.getElementById('form').action =
 			document.location + '?ft=' + this.value;">
 		<option value="" selected="selected" disabled="disabled">Filetype</option>
@@ -130,21 +133,23 @@ cat - <<EOF
 			echo "<option>$ft</option>"
 		done)
 		</select>
-		<input type="submit" value="Paste">
+		<input type="submit" value="Paste" />
+		</div>
 		</form>
-		<br>
 
 		<h4>NAME</h4>
 		<p>vpaste: Vim based pastebin</p>
 
 		<h4>SYNOPSIS</h4>
+		<div>
 		<pre> vpaste file [option=value,..]</pre>
 		<pre> &lt;command&gt; | vpaste [option=value,..]</pre>
-		<br>
-		<pre> &lt;command&gt; | curl -F 'x=<-' $url[?option=value,..]</pre>
-		<br>
-		<pre>:map vp :exec "w !vpaste ft=".&ft&lt;CR&gt;</pre>
-		<pre>:vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&ft&lt;CR&gt;</pre>
+		<br />
+		<pre> &lt;command&gt; | curl -F 'x=&lt;-' $url[?option=value,..]</pre>
+		<br />
+		<pre> :map vp :exec "w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
+		<pre> :vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
+		</div>
 
 		<h4>DESCRIPTION</h4>
 		<p>Add <b>?[option[=value],..]</b> to make your text a rainbow.</p>
@@ -166,17 +171,17 @@ cat - <<EOF
 
 		<h4>SOURCE</h4>
 		<ul>
-		<li><a href="vpaste?ft=sh">vpaste</a>
+		<li><a href="vpaste?ft=sh">vpaste</a></li>
 		<li><a href="index.cgi?ft=sh">index.cgi</a>
 		    <a href="vimrc?ft=vim">vimrc</a>
-		    <a href="htaccess?ft=apache">htaccess</a>
-		<li><a href="2html-et.patch?ft=diff">2html-et.patch</a>
-		<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a>
+		    <a href="htaccess?ft=apache">htaccess</a></li>
+		<li><a href="2html-et.patch?ft=diff">2html-et.patch</a></li>
+		<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a></li>
 		</ul>
 
 		<h4>LATEST UPLOADS</h4>
 		<ul>$(for uri in ${uploads[@]}; do
-			echo "<li><a href='$uri'>$uri</a>"
+			echo "<li><a href='$uri'>$uri</a></li>"
 		done)</ul>
 	</body>
 </html>
