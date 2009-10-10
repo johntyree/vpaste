@@ -68,6 +68,9 @@ function do_print {
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
 		screen -D -m ex -nXZ -i NONE -u vimrc \
+			'+set bexpr= fde= fdt= fex= inde= inex= key= pa= pexpr' \
+			'+set iconstring= ruf= stl= tal= titlestring=' \
+			'+set noml'     \
 			'+2d|'$trim     \
 			'+%s///g'     \
 			'+TOhtml'       \
