@@ -43,7 +43,7 @@ function header {
 
 # Format a file for viewing 
 function do_print {
-	if [ -f "$1" ]; then
+	if [ -f "./$1" ]; then
 		input="$1"
 	elif [ -f "db/$1" ]; then
 		input="db/$1"
@@ -67,7 +67,7 @@ function do_print {
 		#   has a real terminal, not that we also have to set
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
-		screen -D -m ex -Z -u vimrc \
+		screen -D -m ex -nXZ -i NONE -u vimrc \
 			'+2d|'$trim     \
 			'+%s///g'     \
 			'+TOhtml'       \
@@ -99,8 +99,9 @@ function do_upload {
 # Default index page
 function do_help {
 filetypes=$(
-	ls /usr/share/vim/vim{72,files}/syntax/ /home/andy/.vim/after/syntax/ |
-	sed -n 's/.vim$//p' | sort | uniq
+	ls /usr/share/vim/vim*/syntax/ /home/andy/.vim/after/syntax/ |
+	sed -n '/^\(syntax\|manual\|synload\|2html\|colortest\|hitest\).vim$/d; s/.vim$//p' |
+	sort | uniq
 )
 uploads=$(ls -t db | head -n 5 | sed "s!^!$url!")
 
@@ -169,6 +170,12 @@ cat - <<EOF
 		<dd>See :help modeline for more information</dd>
 		</dl>
 
+		<h4>BUGS</h4>
+		<ul>
+		<li>Using strange filetypes (ft=2html) may result in strange output.</li>
+		<li><a href="mailto:andy753421@gmail.com?subject=vpaste bug">Other?</a></li>
+		</ul>
+
 		<h4>SOURCE</h4>
 		<ul>
 		<li><a href="vpaste?ft=sh">vpaste</a></li>
@@ -196,7 +203,7 @@ pathinfo="${pathinfo/\?*}"
 if [ "$pathinfo" ]; then
 	do_print "$pathinfo"
 elif [ "$CONTENT_TYPE" ]; then
-	do_upload ${CONTENT_TYPE/*boundary\=/}
+	do_upload "${CONTENT_TYPE/*boundary\=/}"
 else
 	do_help
 fi
