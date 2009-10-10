@@ -87,7 +87,7 @@ function do_print {
 # Upload handler
 function do_upload {
 	output="$(mktemp db/XXXXX)"
-	uri="$SCRIPT_URI$(basename "$output")${QUERY_STRING:+"?"}"
+	uri="$url$(basename "$output")${QUERY_STRING:+"?"}"
 	(get_modeline; cut_file "$1") > "$output"
 	echo "Status: 302 Found"
 	echo "Location: $uri"
@@ -101,7 +101,7 @@ filetypes=$(
 	ls /usr/share/vim/vim{72,files}/syntax/ /home/andy/.vim/after/syntax/ |
 	sed -n 's/.vim$//p' | sort | uniq
 )
-uploads=$(ls -t db | head -n 5 | sed "s!^!$SCRIPT_URI!")
+uploads=$(ls -t db | head -n 5 | sed "s!^!$url!")
 
 header text/html
 cat - <<EOF
@@ -139,7 +139,7 @@ cat - <<EOF
 		<pre> vpaste file [option=value,..]</pre>
 		<pre> &lt;command&gt; | vpaste [option=value,..]</pre>
 		<br>
-		<pre> &lt;command&gt; | curl -F 'x=<-' $SCRIPT_URI[?option=value,..]</pre>
+		<pre> &lt;command&gt; | curl -F 'x=<-' $url[?option=value,..]</pre>
 		<br>
 		<pre>:map vp :exec "w !vpaste ft=".&ft&lt;CR&gt;</pre>
 		<pre>:vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&ft&lt;CR&gt;</pre>
@@ -181,7 +181,9 @@ EOF
 }
 
 # Main
-pathinfo="${SCRIPT_URL/*\/}"
+url="http://$HTTP_HOST/$SCRIPT_URI"
+pathinfo="${REQUEST_URI/*\/}"
+pathinfo="${pathinfo/\?*}"
 
 if [ "$pathinfo" ]; then
 	do_print "$pathinfo"

@@ -1,5 +1,5 @@
 #!/bin/bash
-uri="http://andy753421.ath.cx/vpaste/"
+uri="http://vpaste.net/"
 if [ -f "$1" ]; then
 	out=$(curl -s -F "x=<$1" "$uri?$2")
 else
