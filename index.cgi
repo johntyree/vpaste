@@ -123,6 +123,8 @@ cat - <<EOF
 	<head>
 		<title>vpaste.net - Vim based pastebin</title>
 		<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+		<meta name="description" content="vpaste: Vim based pastebin" />
+		<meta name="keywords" content="vpaste,paste,pastebin,vim" />
 		<style type="text/css">
 			* { margin:0; padding:0; }
 			body { margin:1em; }
@@ -192,7 +194,9 @@ cat - <<EOF
 		<li><a href="vpaste?ft=sh">vpaste</a></li>
 		<li><a href="index.cgi?ft=sh">index.cgi</a>
 		    <a href="vimrc?ft=vim">vimrc</a>
-		    <a href="htaccess?ft=apache">htaccess</a></li>
+		    <a href="htaccess?ft=apache">htaccess</a>
+		    <a href="robots.txt?ft=robots">robots.txt</a>
+		    <a href="sitemap.xml?ft=xml">sitemap.xml</a></li>
 		<li><a href="2html.patch?ft=diff">2html.patch</a></li>
 		<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a></li>
 		</ul>

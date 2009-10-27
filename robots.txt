@@ -5,5 +5,6 @@ Allow: /htaccess
 Allow: /index.cgi
 Allow: /vimrc
 Allow: /vpaste
+Allow: /sitemap.xml
 Disallow: /
 Sitemap: http://vpaste.net/sitemap.xml
