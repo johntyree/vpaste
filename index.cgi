@@ -109,7 +109,7 @@ function do_upload {
 # Default index page
 function do_help {
 filetypes=$(
-	ls /usr/share/vim/vim*/syntax/ /home/andy/.vim/after/syntax/ |
+	ls /usr/share/vim/vim*/syntax/ /home/andy/.vim/syntax/ |
 	sed -n '/^\(syntax\|manual\|synload\|2html\|colortest\|hitest\).vim$/d; s/.vim$//p' |
 	sort | uniq
 )
