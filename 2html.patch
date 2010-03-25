@@ -1,42 +1,83 @@
---- /home/andy/.vim/syntax/2html.vim	2009-10-10 15:32:39.000000000 +0000
-+++ /usr/share/vim/vim72/syntax/2html.vim	2009-06-16 06:24:31.000000000 +0000
-@@ -192,6 +192,7 @@
+--- /usr/share/vim/vim72/syntax/2html.vim	2009-12-03 18:45:27.000000000 +0000
++++ /home/andy/.vim/syntax/2html.vim	2009-11-23 04:52:46.000000000 +0000
+@@ -22,6 +22,13 @@
+   let s:htmlfont = "monospace"
+ endif
+ 
++" Whitespace
++if &wrap
++  let s:whitespace = "white-space: pre-wrap; "
++else
++  let s:whitespace = ""
++endif
++
+ " When not in gui we can only guess the colors.
+ if has("gui_running")
+   let s:whatterm = "gui"
+@@ -192,7 +199,6 @@
  let s:old_report = &report
  let s:old_search = @/
  set notitle noicon
-+setlocal et
+-setlocal et
  set report=1000000
  
  " Split window to create a buffer with the HTML file.
-@@ -244,7 +245,7 @@
+@@ -245,7 +251,7 @@
  " HTML header, with the title and generator ;-). Left free space for the CSS,
  " to be filled at the end.
  exe "normal! a<html>\n\e"
--exe "normal! a<head>\n<title>" . &titlestring . "</title>\n\e"
-+exe "normal! a<head>\n<title>" . expand("%:p:~") . "</title>\n\e"
+-exe "normal! a<head>\n<title>" . expand("%:p:~") . "</title>\n\e"
++exe "normal! a<head>\n<title>" . &titlestring . "</title>\n\e"
  exe "normal! a<meta name=\"Generator\" content=\"Vim/" . v:version/100 . "." . v:version %100 . '"' . s:tag_close . "\n\e"
  if s:html_encoding != ""
    exe "normal! a<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close . "\n\e"
-@@ -392,16 +393,12 @@
+@@ -257,7 +263,7 @@
+ if exists("html_no_pre")
+   exe "normal! a</head>\n<body>\n\e"
+ else
+-  exe "normal! a</head>\n<body>\n<pre>\n\e"
++  exe "normal! a</head>\n<body><pre>\n\e"
+ endif
+ 
+ exe s:orgwin . "wincmd w"
+@@ -393,12 +399,16 @@
  
        " Expand tabs
        let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
--      if &et
--        let idx = stridx(s:expandedtab, "\t")
--        while idx >= 0
--          let i = &ts - ((idx + s:startcol - 1) % &ts)
--          let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
--          let idx = stridx(s:expandedtab, "\t")
--        endwhile
--      else
--        setlocal isprint+=9
--      endif
-+      let idx = stridx(s:expandedtab, "\t")
-+      while idx >= 0
-+	let i = &ts - ((idx + s:startcol - 1) % &ts)
-+	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
-+	let idx = stridx(s:expandedtab, "\t")
-+      endwhile
+-      let idx = stridx(s:expandedtab, "\t")
+-      while idx >= 0
+-	let i = &ts - ((idx + s:startcol - 1) % &ts)
+-	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
+-	let idx = stridx(s:expandedtab, "\t")
+-      endwhile
++      if &et
++        let idx = stridx(s:expandedtab, "\t")
++        while idx >= 0
++          let i = &ts - ((idx + s:startcol - 1) % &ts)
++          let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
++          let idx = stridx(s:expandedtab, "\t")
++        endwhile
++      else
++        setlocal isprint+=9
++      endif
  
        " Output the text with the same synID, with class set to {s:id_name}
        let s:id = synIDtrans(s:id)
+@@ -423,7 +433,7 @@
+ if exists("html_no_pre")
+   exe "normal! a</body>\n</html>\e"
+ else
+-  exe "normal! a</pre>\n</body>\n</html>\e"
++  exe "normal! a</pre></body>\n</html>\e"
+ endif
+ 
+ 
+@@ -449,7 +459,7 @@
+   if exists("html_no_pre")
+     execute "normal! A\nbody { color: " . s:fgc . "; background-color: " . s:bgc . "; font-family: ". s:htmlfont ."; }\e"
+   else
+-    execute "normal! A\npre { font-family: ". s:htmlfont ."; color: " . s:fgc . "; background-color: " . s:bgc . "; }\e"
++    execute "normal! A\npre { " . s:whitespace . "font-family: ". s:htmlfont ."; color: " . s:fgc . "; background-color: " . s:bgc . "; }\e"
+     yank
+     put
+     execute "normal! ^cwbody\e"
