@@ -47,7 +47,7 @@ function do_print {
 		input="$1"
 	elif [ -f "db/$1" ]; then
 		input="db/$1"
-		trim='1d' # sed command to remove cruft
+		trim='1,/^$/d' # sed command to remove cruft
 	else
 		echo "Status: 404 Not Found"
 		header text/plain
@@ -99,7 +99,11 @@ function do_upload {
 	fi
 	output="$(mktemp db/XXXXX)"
 	uri="$url$(basename "$output")${QUERY_STRING:+"?"}"
-	(get_modeline; echo "$text") > "$output"
+	(get_modeline
+	 echo "Date: $(date -R)"
+	 echo "From: $REMOTE_ADDR"
+	 echo
+	 echo "$text") > "$output"
 	echo "Status: 302 Found"
 	echo "Location: $uri"
 	header text/plain
