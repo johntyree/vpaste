@@ -99,15 +99,33 @@ function do_upload {
 	fi
 	output="$(mktemp db/XXXXX)"
 	uri="$url$(basename "$output")${QUERY_STRING:+"?"}"
-	(get_modeline
-	 echo "Date: $(date -R)"
-	 echo "From: $REMOTE_ADDR"
-	 echo
-	 echo "$text") > "$output"
-	echo "Status: 302 Found"
-	echo "Location: $uri"
-	header text/plain
-	echo "$uri"
+
+	# Format, spam check, and save message
+	(
+		get_modeline
+		echo "Date: $(date -R)"
+		echo "From: $REMOTE_ADDR"
+		echo
+		echo "$text"
+	) | HOME=/home/vpaste spamc -E > "$output"
+
+	# Test for spam
+	if [ "$?" -ne 0 ]; then
+		# Report spam
+		header text/plain
+		echo "Your post has been marked as spam!"
+		echo "Spam test results are as folllows.. "
+		echo
+		cat "$output"
+		mv  "$output" spam
+	else
+		# Redirect user
+		echo "Status: 302 Found"
+		echo "Location: $uri"
+		header text/plain
+		echo "$uri"
+	fi
+	
 }
 
 # Default index page
