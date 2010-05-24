@@ -41,6 +41,24 @@ function header {
 	echo
 }
 
+# List previous pastes
+function do_cmd {
+header text/plain
+case "$1" in
+head)
+	for i in $(ls -t db/*); do 
+		basename $i
+		basename $i | sed 's/./-/g'
+		sed '1,/^$/d; /^\s*$/d' $i | sed -n '1,5s/\(.\{0,60\}\).*/\1/p'
+		echo
+	done
+	;;
+ls)
+	ls -t db | column
+	;;
+esac
+}
+
 # Format a file for viewing 
 function do_print {
 	if [ -f "./$1" ]; then
@@ -230,7 +248,10 @@ cat - <<EOF
 			echo -n "<a href='$upload'>text</a> "
 			echo -n "<a href='$upload?'>rainbow</a>"
 			echo "</li>"
-		done)</ul>
+		done)
+		</ul>
+		<p><a href="ls">list all</a></p>
+		<p><a href="head">sample all</a></p>
 	</body>
 </html>
 EOF
@@ -241,7 +262,11 @@ url="http://$HTTP_HOST${REQUEST_URI/\?*}"
 pathinfo="${REQUEST_URI/*\/}"
 pathinfo="${pathinfo/\?*}"
 
-if [ "$pathinfo" ]; then
+if [ "$pathinfo" = ls ]; then
+	do_cmd ls
+elif [ "$pathinfo" = head ]; then
+	do_cmd head
+elif [ "$pathinfo" ]; then
 	do_print "$pathinfo"
 elif [ "$CONTENT_TYPE" ]; then
 	do_upload "${CONTENT_TYPE/*boundary\=/}"
