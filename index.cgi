@@ -81,11 +81,11 @@ function do_print {
 		sed "1a$(get_modeline)" "$input" > "$tmp"
 
 		# - I have some plugins in ~/.vim
-		# - Run ex in a pty to trick it into thinking that it
+		# - Run ex in screen to trick it into thinking that it
 		#   has a real terminal, note that we also have to set
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
-		/home/andy/bin/pty ex -nXZ -i NONE -u vimrc \
+		screen -D -m ex -nXZ -i NONE -u vimrc \
 			'+set bexpr= fde= fdt= fex= inde= inex= key= pa= pexpr' \
 			'+set iconstring= ruf= stl= tal=' \
 			"+set titlestring=$1\ -\ vpaste.net" \
@@ -95,7 +95,7 @@ function do_print {
 			'+TOhtml'       \
 			"+sav! $output" \
 			'+qall!'        \
-			"$tmp" </dev/null >/dev/null 2>&1
+			"$tmp"
 
 		header text/html
 		cat "$output" 
