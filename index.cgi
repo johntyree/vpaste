@@ -23,16 +23,25 @@ function get_modeline {
 }
 
 # Extract an uploaded file from standard input
-# $1 is the boundary delimiter for the file
+#   $2 is the name of the input to extract
 function cut_file {
-	awk -v "bnd=$1" '{
-		if ($0 == "--"bnd"\r")     { st=1;     }
-		if ($0 == "--"bnd"--\r")   { st=0;     }
-		if (st == 2)               { print $0; }
-		if ($0 == "\r" && st == 1) { st=2;     }
-	}' | head -c -2 | head -c $((128*1024))
-	# Remove trailing ^M's that come with CGI
-	# Limit size to 128K
+        bnd="${CONTENT_TYPE/*boundary\=/}"
+        awk -v "want=$1" -v "bnd=$bnd" '
+        	BEGIN { RS="\r\n" }
+
+        	# reset based on boundaries
+                $0 == "--"bnd""     { st=1; next; }
+                $0 == "--"bnd"--"   { st=0; next; }
+                $0 == "--"bnd"--\r" { st=0; next; }
+
+		# search for wanted file
+                st == 1 && $0 ~  "^Content-Disposition:.* name=\""want"\"" { st=2; next; }
+                st == 1 && $0 == "" { st=9; next; }
+
+		# wait for newline, then start printing
+                st == 2 && $0 == "" { st=3; next; }
+                st == 3             { print $0    }
+        ' | head -c $((128*1024)) # Limit size to 128K
 }
 
 # Print out a generic header
@@ -86,13 +95,13 @@ function do_print {
 		#   term=xterm-256color in vimrc
 		HOME=/home/andy \
 		screen -D -m ex -nXZ -i NONE -u vimrc \
-			'+set bexpr= fde= fdt= fex= inde= inex= key= pa= pexpr' \
-			'+set iconstring= ruf= stl= tal=' \
-			"+set titlestring=$1\ -\ vpaste.net" \
-			'+set noml'     \
-			'+2d|'$trim     \
-			'+%s/\r//g'     \
-			'+TOhtml'       \
+			'+sil! set fde= fdt= fex= inde= inex= key= pa= pexpr=' \
+			'+sil! set iconstring= ruf= stl= tal=' \
+			"+sil! set titlestring=$1\ -\ vpaste.net" \
+			'+sil! set noml'     \
+			'+sil! 2d|'$trim     \
+			'+sil! %s/\r//g' \
+			'+sil! TOhtml'       \
 			"+sav! $output" \
 			'+qall!'        \
 			"$tmp"
@@ -109,7 +118,14 @@ function do_print {
 
 # Upload handler
 function do_upload {
-	text=$(cut_file "$1")
+	body=$(cat -)
+	spam=$(echo -n "$body" | cut_file "ignoreme")
+	text=$(echo -n "$body" | cut_file "(text|x)")
+	if [ ! -z "$spam" ]; then
+		header text/plain
+		echo "Spam check.."
+		exit
+	fi
 	if [ -z "$text" ]; then
 		header text/plain
 		echo "No text pasted"
@@ -143,7 +159,6 @@ function do_upload {
 		header text/plain
 		echo "$uri"
 	fi
-	
 }
 
 # Default index page
@@ -178,6 +193,7 @@ cat - <<EOF
 	<body>
 		<form id="form" method="post" action="?" enctype="multipart/form-data">
 		<div style="margin:0 0 1.5em 0;">
+		<input style="display:none" type="text" name="ignoreme" value="">
 		<textarea name="text" cols="80" rows="25" style="width:100%; height:20em;"></textarea>
 		<select onchange="document.getElementById('form').action =
 			document.location + '?ft=' + this.value;">
@@ -199,7 +215,7 @@ cat - <<EOF
 		<pre> vpaste file [option=value,..]</pre>
 		<pre> &lt;command&gt; | vpaste [option=value,..]</pre>
 		<br />
-		<pre> &lt;command&gt; | curl -F 'x=&lt;-' $url[?option=value,..]</pre>
+		<pre> &lt;command&gt; | curl -F 'text=&lt;-' $url[?option=value,..]</pre>
 		<br />
 		<pre> :map vp :exec "w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
 		<pre> :vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
@@ -269,7 +285,7 @@ elif [ "$pathinfo" = head ]; then
 elif [ "$pathinfo" ]; then
 	do_print "$pathinfo"
 elif [ "$CONTENT_TYPE" ]; then
-	do_upload "${CONTENT_TYPE/*boundary\=/}"
+	do_upload
 else
 	do_help
 fi
