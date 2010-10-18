@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Copyright (C) 2009 Andy Spencer
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -15,7 +15,7 @@
 # Remove url codings from stdin
 function get_modeline {
 	modeline=$(
-		echo "$QUERY_STRING" | 
+		echo "$QUERY_STRING" |
 		sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g; s/[,&]/ /g' |
 		xargs echo -e
 	)
@@ -25,23 +25,23 @@ function get_modeline {
 # Extract an uploaded file from standard input
 #   $2 is the name of the input to extract
 function cut_file {
-        bnd="${CONTENT_TYPE/*boundary\=/}"
-        awk -v "want=$1" -v "bnd=$bnd" '
-        	BEGIN { RS="\r\n" }
+	bnd="${CONTENT_TYPE/*boundary\=/}"
+	awk -v "want=$1" -v "bnd=$bnd" '
+		BEGIN { RS="\r\n" }
 
-        	# reset based on boundaries
-                $0 == "--"bnd""     { st=1; next; }
-                $0 == "--"bnd"--"   { st=0; next; }
-                $0 == "--"bnd"--\r" { st=0; next; }
+		# reset based on boundaries
+		$0 == "--"bnd""     { st=1; next; }
+		$0 == "--"bnd"--"   { st=0; next; }
+		$0 == "--"bnd"--\r" { st=0; next; }
 
 		# search for wanted file
-                st == 1 && $0 ~  "^Content-Disposition:.* name=\""want"\"" { st=2; next; }
-                st == 1 && $0 == "" { st=9; next; }
+		st == 1 && $0 ~  "^Content-Disposition:.* name=\""want"\"" { st=2; next; }
+		st == 1 && $0 == "" { st=9; next; }
 
 		# wait for newline, then start printing
-                st == 2 && $0 == "" { st=3; next; }
-                st == 3             { print $0    }
-        ' | head -c $((128*1024)) # Limit size to 128K
+		st == 2 && $0 == "" { st=3; next; }
+		st == 3             { print $0    }
+	' | head -c $((128*1024)) # Limit size to 128K
 }
 
 # Print out a generic header
@@ -55,7 +55,7 @@ function do_cmd {
 header text/plain
 case "$1" in
 head)
-	for i in $(ls -t db/*); do 
+	for i in $(ls -t db/*); do
 		basename $i
 		basename $i | sed 's/./-/g'
 		sed '1,/^$/d; /^\s*$/d' $i | sed -n '1,5s/\(.\{0,60\}\).*/\1/p'
@@ -68,7 +68,7 @@ ls)
 esac
 }
 
-# Format a file for viewing 
+# Format a file for viewing
 function do_print {
 	if [ -f "./$1" ]; then
 		input="$1"
@@ -107,7 +107,7 @@ function do_print {
 			"$tmp"
 
 		header text/html
-		cat "$output" 
+		cat "$output"
 		rm "$tmp" "$output"
 	else
 		header text/plain
