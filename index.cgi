@@ -87,7 +87,7 @@ function do_print {
 		# Create a temp file with the provided modeline
 		output="$(mktemp)"
 		tmp="$(mktemp)"
-		sed "1a$(get_modeline)" "$input" > "$tmp"
+		sed "\$a$(get_modeline)" "$input" > "$tmp"
 
 		# - I have some plugins in ~/.vim
 		# - Run ex in screen to trick it into thinking that it
@@ -99,7 +99,7 @@ function do_print {
 			'+sil! set iconstring= ruf= stl= tal=' \
 			"+sil! set titlestring=$1\ -\ vpaste.net" \
 			'+sil! set noml'     \
-			'+sil! 2d|'$trim     \
+			'+sil! $d|'$trim     \
 			'+sil! %s/\r//g' \
 			'+sil! TOhtml'       \
 			"+sav! $output" \
