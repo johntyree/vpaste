@@ -179,9 +179,9 @@ function do_help {
 	        </style>
 	    </head>
 	    <body>
-	        <form id="form" method="post" enctype="multipart/form-data">
+	        <form id="form" method="post" action="" enctype="multipart/form-data">
 	        <div style="margin:0 0 1.5em 0;">
-	        <input style="display:none" type="text" name="ignoreme" value="">
+	        <input style="display:none" type="text" name="ignoreme" value="" />
 	        <textarea name="text" cols="80" rows="25" style="width:100%; height:20em;"></textarea>
 	        <select onchange="document.getElementById('form').action =
 	            document.location + '?ft=' + this.value;">
