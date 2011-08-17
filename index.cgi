@@ -210,13 +210,15 @@ function do_help {
 	        </div>
 
 	        <h4>DESCRIPTION</h4>
-	        <p>Add <b>?[option[=value],..]</b> to make your text a rainbow.</p>
-	        <p>Options specified when uploading are used as defaults.</p>
+	        <p>Add <b>?option[=value],..</b> to make your text a rainbow.</p>
+	        <p>Options specified when uploading are stored as defaults.</p>
 
 	        <h4>OPTIONS</h4>
 	        <dl>
 	        <dt>ft, filetype={filetype}</dt>
 	        <dd>A filetype to use for highlighting, see above menu for supported types</dd>
+	        <dt>fdm, foldmethod=(syntax|indent)</dt>
+	        <dd>Turn on dynamic code folding</dd>
 	        <dt>bg, background={light|dark}</dt>
 	        <dd>Background color to use for the page</dd>
 	        <dt>et, expandtab</dt>
