@@ -50,7 +50,7 @@ function header {
 # Print plain message and exit
 function message {
 	while [ "$1" == '-h' ]; do
-		shift; echo $1; shift
+		shift; echo "$1"; shift
 	done
 	header text/plain
 	echo "$*"
@@ -87,37 +87,40 @@ function do_print {
 		        "File '$1' not found"
 	fi
 
-	if [[ "$HTTP_ACCEPT"  == *'html'* &&
-	      "$QUERY_STRING" !=  'raw'* ]]; then
-		# Create a temp file with the provided modeline
-		output="$(mktemp)"
-		tmp="$(mktemp)"
-		sed "\$avim: $(get_modeline)" "$input" > "$tmp"
-
-		# - I have some plugins in ~/.vim
-		# - Run ex in screen to trick it into thinking that it
-		#   has a real terminal, note that we also have to set
-		#   term=xterm-256color in vimrc
-		HOME=/home/andy \
-		screen -D -m ex -nXZ -i NONE -u vimrc \
-			'+sil! set fde= fdt= fex= inde= inex= key= pa= pexpr=' \
-			'+sil! set iconstring= ruf= stl= tal=' \
-			"+sil! set titlestring=$1\ -\ vpaste.net" \
-			'+sil! set noml'     \
-			'+sil! $d|'$trim     \
-			'+sil! %s/\r//g' \
-			'+sil! TOhtml'       \
-			"+sav! $output" \
-			'+qall!'        \
-			"$tmp"
-
-		header text/html
-		cat "$output"
-		rm "$tmp" "$output"
-	else
+	# Check for raw paste
+	if [[ "$QUERY_STRING" == 'raw'* ||
+	      "$REQUEST_URI"  != *'?'* &&
+	      "$HTTP_ACCEPT"  != *'html'* ]]; then
 		header text/plain
 		sed "$trim" "$input"
+		exit
 	fi
+
+	# Create a temp file with the provided modeline
+	output="$(mktemp)"
+	tmp="$(mktemp)"
+	sed "\$avim: $(get_modeline)" "$input" > "$tmp"
+
+	# - I have some plugins in ~/.vim
+	# - Run ex in screen to trick it into thinking that it
+	#   has a real terminal, note that we also have to set
+	#   term=xterm-256color in vimrc
+	HOME=/home/andy \
+	screen -D -m ex -nXZ -i NONE -u vimrc \
+		'+sil! set fde= fdt= fex= inde= inex= key= pa= pexpr=' \
+		'+sil! set iconstring= ruf= stl= tal=' \
+		"+sil! set titlestring=$1\ -\ vpaste.net" \
+		'+sil! set noml'     \
+		'+sil! $d|'$trim     \
+		'+sil! %s/\r//g' \
+		'+sil! TOhtml'       \
+		"+sav! $output" \
+		'+qall!'        \
+		"$tmp"
+
+	header text/html
+	cat "$output"
+	rm "$tmp" "$output"
 }
 
 
@@ -140,7 +143,7 @@ function do_upload {
 	EOF
 
 	# Redirect user
-	uri="$SCRIPT_URI$(basename "$output")"
+	uri="$url$(basename "$output")"
 	message -h 'Status: 302 Found' \
 	        -h "Location: $uri"    \
 		"$uri"
@@ -176,7 +179,7 @@ function do_help {
 	        </style>
 	    </head>
 	    <body>
-	        <form id="form" method="post" action="?" enctype="multipart/form-data">
+	        <form id="form" method="post" enctype="multipart/form-data">
 	        <div style="margin:0 0 1.5em 0;">
 	        <input style="display:none" type="text" name="ignoreme" value="">
 	        <textarea name="text" cols="80" rows="25" style="width:100%; height:20em;"></textarea>
@@ -200,7 +203,7 @@ function do_help {
 	        <pre> vpaste file [option=value,..]</pre>
 	        <pre> &lt;command&gt; | vpaste [option=value,..]</pre>
 	        <br />
-	        <pre> &lt;command&gt; | curl -F 'text=&lt;-' $SCRIPT_URI[?option=value,..]</pre>
+	        <pre> &lt;command&gt; | curl -F 'text=&lt;-' $url[?option=value,..]</pre>
 	        <br />
 	        <pre> :map vp :exec "w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
 	        <pre> :vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
@@ -259,6 +262,8 @@ function do_help {
 }
 
 # Main
+PATH=/bin:/usr/bin
+url="http://$HTTP_HOST${REQUEST_URI/\?*}"
 pathinfo="${REQUEST_URI/*\/}"
 pathinfo="${pathinfo/\?*}"
 
