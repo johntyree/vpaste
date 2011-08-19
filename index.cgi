@@ -15,8 +15,11 @@
 # Remove url codings from stdin
 function get_modeline {
 	echo "$QUERY_STRING" |
-	sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g; s/[,&]/ /g' |
+	sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g; s/[,&?]/ /g' |
 	xargs echo -e
+}
+function get_param {
+	get_modeline | awk -v "key=$1" 'BEGIN{RS=" "; FS="="}; $1 ~ key {print $2}'
 }
 
 # Extract an uploaded file from standard input
@@ -157,6 +160,7 @@ function do_help {
 		sort | uniq
 	)
 	uploads=$(ls -t db | head -n 5)
+	filetype=$(get_param '^(ft|filet(y(pe?)?)?)$')
 
 	header text/html
 	cat <<-EOF
@@ -185,11 +189,14 @@ function do_help {
 	        <textarea name="text" cols="80" rows="25" style="width:100%; height:20em;"></textarea>
 	        <select onchange="document.getElementById('form').action =
 	            document.location + '?ft=' + this.value;">
-	        <option value="" selected="selected" disabled="disabled">Filetype</option>
-	        <option value="">None</option>
-	        $(for ft in $filetypes; do
-	            echo "<option>$ft</option>"
-	        done)
+	                <option value="" disabled="disabled">Filetype</option>
+	                <option value="">None</option>
+	                $(for ft in $filetypes; do
+	                        echo "<option$(
+	                        [ "$ft" = "$filetype" ] &&
+	                                echo ' selected="selected"'
+	                        )>$ft</option>"
+	                done)
 	        </select>
 	        <input type="submit" value="Paste" />
 	        </div>
