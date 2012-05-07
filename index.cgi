@@ -185,8 +185,8 @@ function do_help {
 				             margin-bottom: 0.5em; }
 				.buttons   { float: left; }
 				.links     { float: right; }
-				.links a   { text-decoration: none;
-				             margin-left: 0.4em; }
+				.links *   { text-decoration: none;
+				             margin-left: 0.5em; }
 				.box       { display: none;
 				             clear: both;
 				             margin-top: 2.7em;
@@ -211,10 +211,15 @@ function do_help {
 							box.style.display = "none"
 					}
 				}
+				function autoshow() {
+					id = document.location.toString().replace(/.*#/, '')
+					box = document.getElementById(id)
+					if (box) box.style.display = "block"
+				}
 			</script>
 		</head>
 
-		<body>
+		<body onload="autoshow()">
 			<form id="form" method="post" action="" enctype="multipart/form-data">
 				<input style="display:none" type="text" name="ignoreme" value="" />
 				<textarea name="text" cols="80" rows="25"></textarea>
@@ -233,9 +238,10 @@ function do_help {
 					<input type="submit" value="Paste" />
 				</div>
 				<div class="links">
-					<a href="javascript:show('usage'  )">Usage</a>
-					<a href="javascript:show('devel'  )">Development</a>
-					<a href="javascript:show('uploads')">Uploads</a>
+					<a href="">vpaste</a> <span>-</span>
+					<a href="#usage"   onclick="show('usage'  )">Usage</a>
+					<a href="#devel"   onclick="show('devel'  )">Development</a>
+					<a href="#uploads" onclick="show('uploads')">Uploads</a>
 				</div>
 			</form>
 
