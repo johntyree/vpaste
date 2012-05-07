@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2009-2011 Andy Spencer
+# Copyright (C) 2009-2012 Andy Spencer
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Affero General Public License as published by the Free
@@ -149,7 +149,7 @@ function do_upload {
 	uri="$url$(basename "$output")"
 	message -h 'Status: 302 Found' \
 	        -h "Location: $uri"    \
-		"$uri"
+	        "$uri"
 }
 
 # Default index page
@@ -161,111 +161,156 @@ function do_help {
 	)
 	uploads=$(ls -t db | head -n 5)
 	filetype=$(get_param '^(ft|filet(y(pe?)?)?)$')
+	vpaste='<a href="vpaste?ft=sh">vpaste</a>'
 
 	header text/html
 	cat <<-EOF
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-	    <head>
-	        <title>vpaste.net - Vim based pastebin</title>
-	        <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
-	        <meta name="description" content="vpaste: Vim based pastebin" />
-	        <meta name="keywords" content="vpaste,paste,pastebin,vim" />
-	        <style type="text/css">
-	            * { margin:0; padding:0; }
-	            body { margin:1em; }
-	            h4 { margin:1em 0 0 0; }
-	            blockquote,dd,dl,p,pre,ul { margin:0 0 0 2em; }
-	            dt { font-weight:bold; padding:0.5em 0 0 0; }
-	            blockquote { width:50em; font-size:small; }
-	            span { font-family:monospace; }
-	        </style>
-	    </head>
-	    <body>
-	        <form id="form" method="post" action="" enctype="multipart/form-data">
-	        <div style="margin:0 0 1.5em 0;">
-	        <input style="display:none" type="text" name="ignoreme" value="" />
-	        <textarea name="text" cols="80" rows="25" style="width:100%; height:20em;"></textarea>
-	        <select onchange="document.getElementById('form').action =
-	            document.location + '?ft=' + this.value;">
-	                <option value="" disabled="disabled">Filetype</option>
-	                <option value="">None</option>
-	                $(for ft in $filetypes; do
-	                        echo "<option$(
-	                        [ "$ft" = "$filetype" ] &&
-	                                echo ' selected="selected"'
-	                        )>$ft</option>"
-	                done)
-	        </select>
-	        <input type="submit" value="Paste" />
-	        </div>
-	        </form>
+		<head>
+			<title>vpaste.net - Vim based pastebin</title>
+			<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+			<meta name="description" content="vpaste: Vim based pastebin" />
+			<meta name="keywords" content="vpaste,paste,pastebin,vim" />
+			<style type="text/css">
+				*          { margin: 0;
+				             padding: 0; }
+				body       { margin: 4em 8em 4em 8em;
+				             font-family: sans-serif; }
+				/* Items */
+				textarea   { width: 100%;
+				             margin-bottom: 0.5em; }
+				.buttons   { float: left; }
+				.links     { float: right; }
+				.links a   { text-decoration: none;
+				             margin-left: 0.4em; }
+				.box       { display: none;
+				             clear: both;
+				             margin-top: 2.7em;
+				             border-top: solid 1px #888; }
+				/* box contents */
+				h1         { margin-top: 1.0em;
+				             font-size: larger; }
+				ul,dd,dl,p { margin: 0 0 0 2em; }
+				dt         { font-weight: bold;
+				             padding: 0.5em 0 0 0; }
+				span       { font-family: monospace; }
+				.cmds dd   { font-family: monospace; }
+			</style>
+			<script>
+				function show(id) {
+					boxes = document.getElementsByClassName('box');
+					for (i=0; i<boxes.length; i++) {
+						box = boxes[i]
+						if (box.id == id && box.style.display != 'block')
+							box.style.display = 'block'
+						else
+							box.style.display = "none"
+					}
+				}
+			</script>
+		</head>
 
-	        <h4>NAME</h4>
-	        <p>vpaste: Vim based pastebin</p>
+		<body>
+			<form id="form" method="post" action="" enctype="multipart/form-data">
+				<input style="display:none" type="text" name="ignoreme" value="" />
+				<textarea name="text" cols="80" rows="25"></textarea>
+				<div class="buttons">
+					<select onchange="document.getElementById('form').action =
+							  document.location + '?ft=' + this.value;">
+						<option value="" disabled="disabled">Filetype</option>
+						<option value="">None</option>
+						$(for ft in $filetypes; do
+							echo "<option$(
+							[ "$ft" = "$filetype" ] &&
+								echo ' selected="selected"'
+							)>$ft</option>"
+						done)
+					</select>
+					<input type="submit" value="Paste" />
+				</div>
+				<div class="links">
+					<a href="javascript:show('usage'  )">Usage</a>
+					<a href="javascript:show('devel'  )">Development</a>
+					<a href="javascript:show('uploads')">Uploads</a>
+				</div>
+			</form>
 
-	        <h4>SYNOPSIS</h4>
-	        <div>
-	        <pre> vpaste file [option=value,..]</pre>
-	        <pre> &lt;command&gt; | vpaste [option=value,..]</pre>
-	        <br />
-	        <pre> &lt;command&gt; | curl -F 'text=&lt;-' $url[?option=value,..]</pre>
-	        <br />
-	        <pre> :map vp :exec "w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
-	        <pre> :vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&amp;ft&lt;CR&gt;</pre>
-	        </div>
+			<div class="box" id="usage">
+				<h1>Pasting</h1>
+				<dl class="cmds">
+					<dt>From a shell</dt>
+					<dd> $vpaste file [option=value,..]</dd>
+					<dd> &lt;command&gt; | $vpaste [option=value,..]</dd>
 
-	        <h4>DESCRIPTION</h4>
-	        <p>Add <b>?option[=value],..</b> to make your text a rainbow.</p>
-	        <p>Options specified when uploading are stored as defaults.</p>
+					<dt>From Vim</dt>
+					<dd> :map vp :exec "w !vpaste ft=".&amp;ft&lt;CR&gt;</dd>
+					<dd> :vmap vp &lt;ESC&gt;:exec "'&lt;,'&gt;w !vpaste ft=".&amp;ft&lt;CR&gt;</dd>
 
-	        <h4>OPTIONS</h4>
-	        <dl>
-	        <dt>ft, filetype={filetype}</dt>
-	        <dd>A filetype to use for highlighting, see above menu for supported types</dd>
-	        <dt>fdm, foldmethod=(syntax|indent)</dt>
-	        <dd>Turn on dynamic code folding</dd>
-	        <dt>bg, background={light|dark}</dt>
-	        <dd>Background color to use for the page</dd>
-	        <dt>et, expandtab</dt>
-	        <dd>Expand tabs to spaces</dd>
-	        <dt>ts, tabstop=[N]</dt>
-	        <dd>Number of spaces to use for tabs when <b>et</b> is set</dd>
-	        <dt>...</dt>
-	        <dd>See :help modeline for more information</dd>
-	        </dl>
+					<dt>With curl</dt>
+					<dd> &lt;command&gt; | curl -F 'text=&lt;-' $url[?option=value,..]</dd>
+				</dl>
 
-	        <h4>BUGS</h4>
-	        <ul>
-	        <li>Using strange filetypes (ft=2html) may result in strange output.</li>
-	        <li><a href="mailto:andy753421@gmail.com?subject=vpaste bug">Other?</a></li>
-	        </ul>
+				<h1>Options</h1>
+				<p>Add <b>?option[=value],..</b> to make your text a rainbow.</p>
+				<p>Options specified when uploading are saved as defaults.</p>
 
-	        <h4>SOURCE</h4>
-	        <ul>
-	        <li><a href="vpaste?ft=sh">vpaste</a></li>
-	        <li><a href="index.cgi?ft=sh">index.cgi</a>
-	            <a href="vimrc?ft=vim">vimrc</a>
-	            <a href="htaccess?ft=apache">htaccess</a>
-	            <a href="robots.txt?ft=robots">robots.txt</a>
-	            <a href="sitemap.xml?ft=xml">sitemap.xml</a></li>
-	        <li><a href="2html.patch?ft=diff">2html.patch</a></li>
-	        <li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a></li>
-	        </ul>
+				<dl>
+					<dt>ft, filetype={filetype}</dt>
+					<dd>A filetype to use for highlighting, see above menu for supported types</dd>
+					<dt>fdm, foldmethod=(syntax|indent)</dt>
+					<dd>Turn on dynamic code folding</dd>
+					<dt>bg, background={light|dark}</dt>
+					<dd>Background color to use for the page</dd>
+					<dt>et, expandtab</dt>
+					<dd>Expand tabs to spaces</dd>
+					<dt>ts, tabstop=[N]</dt>
+					<dd>Number of spaces to use for tabs when <b>et</b> is set</dd>
+					<dt>...</dt>
+					<dd>See :help modeline for more information</dd>
+				</dl>
+			</div>
 
-	        <h4>LATEST UPLOADS</h4>
-	        <ul>$(for upload in ${uploads[@]}; do
-	            echo -n "<li>"
-	            echo -n "<span>$upload</span> "
-	            echo -n "<a href='$upload?raw'>text</a> "
-	            echo -n "<a href='$upload'>rainbow</a>"
-	            echo "</li>"
-	        done)
-	        </ul>
-	        <p><a href="ls">list all</a></p>
-	        <p><a href="head">sample all</a></p>
-	    </body>
+			<div class="box" id="devel">
+				<h1>License</h1>
+				<p>Copyright © 2009-2012
+				   Andy spencer &lt;andy753421@gmail.com&gt;</p>
+				<p>See individual files for license</p>
+
+				<h1>Source code</h1>
+				<ul>
+					<li><a href="vpaste?ft=sh">vpaste</a></li>
+					<li><a href="index.cgi?ft=sh">index.cgi</a>
+					    <a href="vimrc?ft=vim">vimrc</a>
+					    <a href="htaccess?ft=apache">htaccess</a>
+					    <a href="robots.txt?ft=robots">robots.txt</a>
+					    <a href="sitemap.xml?ft=xml">sitemap.xml</a></li>
+					<li><a href="2html.patch?ft=diff">2html.patch</a></li>
+					<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a></li>
+				</ul>
+
+				<h1>Bugs</h1>
+				<ul>
+					<li>Using strange filetypes (ft=2html) may result in strange output.</li>
+					<li><a href="mailto:andy753421@gmail.com?subject=vpaste bug">Other?</a></li>
+				</ul>
+			</div>
+
+			<div class="box" id="uploads">
+				<h1>Recent Uploads</h1>
+				<ul>$(for upload in ${uploads[@]}; do
+				    echo -n "<li>"
+				    echo -n "<span>$upload</span> "
+				    echo -n "<a href='$upload?raw'>text</a> "
+				    echo -n "<a href='$upload'>rainbow</a>"
+				    echo "</li>"
+				done)
+				</ul>
+				<p><a href="ls">list all</a></p>
+				<p><a href="head">sample all</a></p>
+			</div>
+		</body>
 	</html>
 	EOF
 }
