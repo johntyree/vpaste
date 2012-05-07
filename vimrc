@@ -21,6 +21,9 @@ let g:html_use_encoding   = "UTF-8"
 let g:html_no_progress    = 1
 let g:html_dynamic_folds  = 1
 
+" Misc
+let g:is_bash             = 1
+
 " Override these with modelines
 set nowrap noexpandtab
 au BufWinEnter * let g:html_expand_tabs = &expandtab

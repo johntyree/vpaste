@@ -93,7 +93,8 @@ function do_print {
 	# Check for raw paste
 	if [[ "$QUERY_STRING" == 'raw'* ||
 	      "$REQUEST_URI"  != *'?'* &&
-	      "$HTTP_ACCEPT"  != *'html'* ]]; then
+	      ( "$input"       != 'db/'* ||
+	        "$HTTP_ACCEPT" != *'html'* ) ]]; then
 		header text/plain
 		sed "$trim" "$input"
 		exit
@@ -173,6 +174,7 @@ function do_help {
 			<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
 			<meta name="description" content="vpaste: Vim based pastebin" />
 			<meta name="keywords" content="vpaste,paste,pastebin,vim" />
+			<meta name="google-site-verification" content="OvHF73zD7osJ1VSq9rJxnMFlja36944ud6CiP_iXQnI" />
 			<style type="text/css">
 				*          { margin: 0;
 				             padding: 0; }
