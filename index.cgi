@@ -47,7 +47,13 @@ function cut_file {
 # Print out a generic header
 function header {
 	echo "Content-Type: $1; charset=UTF-8"
-	echo
+	if [[ "$HTTP_ACCEPT_ENCODING" == *'gzip'* ]]; then
+		echo "Content-Encoding: gzip"
+		echo
+		exec 1> >(gzip)
+	else
+		echo
+	fi
 }
 
 # Print plain message and exit
@@ -65,12 +71,15 @@ function do_cmd {
 	header text/plain
 	case "$1" in
 	head)
-		for i in $(ls -t db/*); do
-			basename $i
-			basename $i | sed 's/./-/g'
-			sed '1,/^$/d; /^\s*$/d' $i | sed -n '1,5s/\(.\{0,60\}\).*/\1/p'
-			echo
-		done
+		awk '
+			BEGIN       { rows=4; cols=60; }
+			FNR==1      { gsub(/.*\//, "", FILENAME);
+			              print FILENAME
+			              print "-----" }
+			FNR==1,/^$/ { next }
+			/\S/        { i++; printf "%."cols"s\n", $0 }
+			i>=rows     { i=0; print ""; nextfile  }
+		' $(ls -t db/*)
 		;;
 	ls)
 		ls -t db | column
@@ -289,8 +298,8 @@ function do_help {
 			<div class="box" id="devel">
 				<h1>License</h1>
 				<p>Copyright © 2009-2012
-				   Andy spencer &lt;andy753421@gmail.com&gt;</p>
-				<p>See individual files for license</p>
+				   Andy Spencer &lt;andy753421@gmail.com&gt;</p>
+				<p>See individual files for licenses</p>
 
 				<h1>Source code</h1>
 				<ul>
