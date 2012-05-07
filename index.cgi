@@ -200,11 +200,12 @@ function do_help {
 				span       { font-family: monospace; }
 				.cmds dd   { font-family: monospace; }
 			</style>
-			<script>
+			<script type="text/javascript">
+				//<![CDATA[
 				function show(id) {
-					boxes = document.getElementsByClassName('box');
-					for (i=0; i<boxes.length; i++) {
-						box = boxes[i]
+					var boxes = document.getElementsByClassName('box')
+					for (var i = 0; i < boxes.length; i++) {
+						var box = boxes[i]
 						if (box.id == id && box.style.display != 'block')
 							box.style.display = 'block'
 						else
@@ -212,17 +213,20 @@ function do_help {
 					}
 				}
 				function autoshow() {
-					id = document.location.toString().replace(/.*#/, '')
-					box = document.getElementById(id)
+					var id  = document.location.toString().replace(/.*#/, '')
+					var box = document.getElementById(id)
 					if (box) box.style.display = "block"
 				}
+				//]]>
 			</script>
 		</head>
 
 		<body onload="autoshow()">
 			<form id="form" method="post" action="" enctype="multipart/form-data">
-				<input style="display:none" type="text" name="ignoreme" value="" />
-				<textarea name="text" cols="80" rows="25"></textarea>
+				<div>
+					<input style="display:none" type="text" name="ignoreme" value="" />
+					<textarea name="text" cols="80" rows="25"></textarea>
+				</div>
 				<div class="buttons">
 					<select onchange="document.getElementById('form').action =
 							  document.location + '?ft=' + this.value;">
@@ -265,14 +269,16 @@ function do_help {
 				<p>Options specified when uploading are saved as defaults.</p>
 
 				<dl>
-					<dt>ft, filetype={filetype}</dt>
-					<dd>A filetype to use for highlighting, see above menu for supported types</dd>
-					<dt>fdm, foldmethod=(syntax|indent)</dt>
-					<dd>Turn on dynamic code folding</dd>
 					<dt>bg, background={light|dark}</dt>
 					<dd>Background color to use for the page</dd>
 					<dt>et, expandtab</dt>
 					<dd>Expand tabs to spaces</dd>
+					<dt>fdm, foldmethod=(syntax|indent)</dt>
+					<dd>Turn on dynamic code folding</dd>
+					<dt>ft, filetype={filetype}</dt>
+					<dd>A filetype to use for highlighting, see above menu for supported types</dd>
+					<dt>nu, number</dt>
+					<dd>Add line numbers</dd>
 					<dt>ts, tabstop=[N]</dt>
 					<dd>Number of spaces to use for tabs when <b>et</b> is set</dd>
 					<dt>...</dt>
