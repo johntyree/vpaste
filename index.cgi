@@ -71,14 +71,14 @@ function do_cmd {
 	header text/plain
 	case "$1" in
 	head)
-		awk '
-			BEGIN       { rows=4; cols=60; }
+		awk -v 'rows=4' -v 'cols=60' '
 			FNR==1      { gsub(/.*\//, "", FILENAME);
 			              print FILENAME
 			              print "-----" }
 			FNR==1,/^$/ { next }
 			/\S/        { i++; printf "%."cols"s\n", $0 }
-			i>=rows     { i=0; print ""; nextfile  }
+			i>=rows     { nextfile  }
+			ENDFILE     { i=0; print ""  }
 		' $(ls -t db/*)
 		;;
 	ls)
