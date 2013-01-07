@@ -153,7 +153,9 @@ function do_upload {
 	body=$(cat -)
 	spam=$(echo -n "$body" | cut_file "ignoreme")
 	text=$(echo -n "$body" | cut_file "(text|x)")
+	bans=$(echo -n "$REMOTE_ADDR" | grep -f blacklist)
 	[ ! -z "$spam" ] && message "Spam check.."
+	[ ! -z "$bans" ] && message "You have been banned"
 	[   -z "$text" ] && message "No text pasted"
 
 	# Format and save message
@@ -162,6 +164,7 @@ function do_upload {
 		vim: $(get_modeline)
 		Date: $(date -R)
 		From: $REMOTE_ADDR
+		User-Agent: $HTTP_USER_AGENT
 
 		$text
 	EOF
@@ -324,6 +327,7 @@ function do_help {
 					    <a href="htaccess?ft=apache">htaccess</a>
 					    <a href="robots.txt?ft=robots">robots.txt</a>
 					    <a href="sitemap.xml?ft=xml">sitemap.xml</a>
+					    <a href="blacklist?raw">blacklist</a></dd>
 					<dt>Patches</dt>
 					<dd><a href="2html.patch?ft=diff">2html.patch</a></dd>
 					<dt>Subversion</dt>
