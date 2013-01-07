@@ -183,6 +183,7 @@ function do_help {
 	uploads=$(ls -t db | head -n 5)
 	filetype=$(get_param '^(ft|filet(y(pe?)?)?)$')
 	vpaste='<a href="vpaste?ft=sh">vpaste</a>'
+	repo='https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/'
 
 	header text/html
 	cat <<-EOF
@@ -200,6 +201,7 @@ function do_help {
 				             padding: 0; }
 				body       { margin: 4em 8em 4em 8em;
 				             font-family: sans-serif; }
+				input      { padding: 2px 6px 3px 6px; }
 				/* Items */
 				textarea   { width: 100%;
 				             margin-bottom: 0.5em; }
@@ -313,16 +315,20 @@ function do_help {
 				<p>See individual files for licenses</p>
 
 				<h1>Source code</h1>
-				<ul>
-					<li><a href="vpaste?ft=sh">vpaste</a></li>
-					<li><a href="index.cgi?ft=sh">index.cgi</a>
+				<dl>
+					<dt>Client</dt>
+					<dd><a href="vpaste?ft=sh">vpaste</a></dd>
+					<dt>Server</dt>
+					<dd><a href="index.cgi?ft=sh">index.cgi</a>
 					    <a href="vimrc?ft=vim">vimrc</a>
 					    <a href="htaccess?ft=apache">htaccess</a>
 					    <a href="robots.txt?ft=robots">robots.txt</a>
-					    <a href="sitemap.xml?ft=xml">sitemap.xml</a></li>
-					<li><a href="2html.patch?ft=diff">2html.patch</a></li>
-					<li><a href="https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/">Subversion</a></li>
-				</ul>
+					    <a href="sitemap.xml?ft=xml">sitemap.xml</a>
+					<dt>Patches</dt>
+					<dd><a href="2html.patch?ft=diff">2html.patch</a></dd>
+					<dt>Subversion</dt>
+					<dd><a href="$repo">$repo</a></dd>
+				</dl>
 
 				<h1>Bugs</h1>
 				<ul>
