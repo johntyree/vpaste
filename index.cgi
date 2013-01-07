@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2009-2012 Andy Spencer
+# Copyright (C) 2009-2013 Andy Spencer
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Affero General Public License as published by the Free
@@ -44,31 +44,114 @@ function cut_file {
 	' | head -c $((128*1024)) # Limit size to 128K
 }
 
-# Print out a generic header
-function header {
-	echo "Content-Type: $1; charset=UTF-8"
+# Respond to a request
+function respond {
+	local allow ctype heads files texts gzip h f
+	while [ "$1" ]; do
+		case $1 in
+			-y) allow="true"; ;;
+			-c) ctype="$2"; shift ;;
+			-h) heads=("${heads[@]}" "$2"); shift ;;
+			-f) files=("${files[@]}" "$2"); shift ;;
+		        *)  texts=("${texts[@]}" "$1"); ;;
+		esac
+		shift
+	done
+
+	# Check if the browser supports gzip
 	if [[ "$HTTP_ACCEPT_ENCODING" == *'gzip'* ]]; then
-		echo "Content-Encoding: gzip"
-		echo
-		exec 1> >(gzip)
+		gzip=true
+	fi
+
+	# Output header
+	if [ "$ctype" ]; then
+		echo "Content-Type: $ctype; charset=UTF-8"
 	else
-		echo
+		echo "Content-Type: text/plain; charset=UTF-8"
+	fi
+	if [ "$gzip" ]; then
+		echo "Content-Encoding: gzip"
+	fi
+	if [ "$allow" ]; then
+		echo "Access-Control-Allow-Origin: *"
+		echo "Access-Control-Allow-Headers: Content-Type"
+	fi
+	for h in "${heads[@]}"; do
+		echo "$h"
+	done
+	echo
+
+	# Output text messages
+	if [ "$texts" ]; then
+		if [ "$gzip" ]; then
+			echo "${texts[@]}" | gzip
+		else
+			echo "${texts[@]}"
+		fi
+		exit
+	fi
+
+	# Output body files
+	if [ "$files" ]; then
+		for f in "${files[@]}"; do
+			if   [[   "$gzip" && "$f" != *'.gz' ]]; then
+				gzip < "$f"
+			elif [[ ! "$gzip" && "$f" == *'.gz' ]]; then
+				zcat < "$f"
+			else
+				cat "$f"
+			fi
+		done
+		exit
+	fi
+
+	# Gzip remaining stream
+	if [ "$gzip" ]; then
+		exec 1> >(gzip)
 	fi
 }
 
-# Print plain message and exit
-function message {
-	while [ "$1" == '-h' ]; do
-		shift; echo "$1"; shift
-	done
-	header text/plain
-	echo "$*"
-	exit
+# Format and output a file
+function format {
+	# Create a temp file with the provided modeline
+	tmp="$(mktemp)"
+	sed "\$avim: $(get_modeline)" "$1" > "$tmp"
+
+	# Determine cache name
+	md5="$(cat index.cgi vimrc "$tmp" /usr/bin/ex | md5sum -b)"
+	out="cache/${md5% *}.htm"
+	zip="$out.gz"
+
+	# Cache the file, if needed
+	if [ ! -f "$zip" ]; then
+		# - I have some plugins in ~/.vim
+		# - Run ex in pty to trick it into thinking that it
+		#   has a real terminal, note that we also have to set
+		#   term=xterm-256color in vimrc
+		HOME=/home/andy \
+		/home/vpaste/bin/pty \
+		/usr/bin/ex -nXZ -i NONE -u vimrc \
+			'+sil! set fde= fdt= fex= inde= inex= key= pa= pexpr=' \
+			'+sil! set iconstring= ruf= stl= tal=' \
+			"+sil! set titlestring=$1\ -\ vpaste.net" \
+			'+sil! set noml' \
+			'+sil! $d|'$2    \
+			'+sil! %s/\r//g' \
+			'+sil! TOhtml'   \
+			"+sav! $out"     \
+			'+qall!'         \
+			"$tmp" >/dev/null 2>&1
+		gzip "$out"
+	fi
+	rm "$tmp"
+
+	# Output the file
+	respond -y -c "text/html" -f "$zip"
 }
 
 # List previous pastes
 function do_cmd {
-	header text/plain
+	respond
 	case "$1" in
 	ls)
 		ls -t db | column
@@ -106,8 +189,14 @@ function do_print {
 		input="db/$1"
 		trim='1,/^$/d' # sed command to remove cruft
 	else
-		message -h 'Status: 404 Not Found' \
+		respond -h 'Status: 404 Not Found' \
 		        "File '$1' not found"
+	fi
+
+	# Check for javascript
+	if [[ "$input" == 'embed.js' &&
+	      "$HTTP_ACCEPT" != *'html'* ]]; then
+		respond -c text/javascript -f "$input"
 	fi
 
 	# Check for raw paste
@@ -115,38 +204,19 @@ function do_print {
 	      "$REQUEST_URI"  != *'?'* &&
 	      ( "$input"       != 'db/'* ||
 	        "$HTTP_ACCEPT" != *'html'* ) ]]; then
-		header text/plain
+		respond
 		sed "$trim" "$input"
 		exit
 	fi
 
-	# Create a temp file with the provided modeline
-	output="$(mktemp)"
-	tmp="$(mktemp)"
-	sed "\$avim: $(get_modeline)" "$input" > "$tmp"
-
-	# - I have some plugins in ~/.vim
-	# - Run ex in screen to trick it into thinking that it
-	#   has a real terminal, note that we also have to set
-	#   term=xterm-256color in vimrc
-	HOME=/home/andy \
-	screen -D -m ex -nXZ -i NONE -u vimrc \
-		'+sil! set fde= fdt= fex= inde= inex= key= pa= pexpr=' \
-		'+sil! set iconstring= ruf= stl= tal=' \
-		"+sil! set titlestring=$1\ -\ vpaste.net" \
-		'+sil! set noml'     \
-		'+sil! $d|'$trim     \
-		'+sil! %s/\r//g' \
-		'+sil! TOhtml'       \
-		"+sav! $output" \
-		'+qall!'        \
-		"$tmp"
-
-	header text/html
-	cat "$output"
-	rm "$tmp" "$output"
+	# Output the file
+	format "$input" "$trim"
 }
 
+# Format a file for viewing
+function do_view {
+	format -
+}
 
 # Upload handler
 function do_upload {
@@ -154,9 +224,9 @@ function do_upload {
 	spam=$(echo -n "$body" | cut_file "ignoreme")
 	text=$(echo -n "$body" | cut_file "(text|x)")
 	bans=$(echo -n "$REMOTE_ADDR" | grep -f blacklist)
-	[ ! -z "$spam" ] && message "Spam check.."
-	[ ! -z "$bans" ] && message "You have been banned"
-	[   -z "$text" ] && message "No text pasted"
+	[ ! -z "$spam" ] && respond "Spam check.."
+	[ ! -z "$bans" ] && respond "You have been banned"
+	[   -z "$text" ] && respond "No text pasted"
 
 	# Format and save message
 	output="$(mktemp db/XXXXX)"
@@ -171,7 +241,7 @@ function do_upload {
 
 	# Redirect user
 	uri="$url$(basename "$output")"
-	message -h 'Status: 302 Found' \
+	respond -h 'Status: 302 Found' \
 	        -h "Location: $uri"    \
 	        "$uri"
 }
@@ -188,7 +258,7 @@ function do_help {
 	vpaste='<a href="vpaste?ft=sh">vpaste</a>'
 	repo='https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/'
 
-	header text/html
+	respond -c text/html
 	cat <<-EOF
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -313,14 +383,15 @@ function do_help {
 
 			<div class="box" id="devel">
 				<h1>License</h1>
-				<p>Copyright © 2009-2012
+				<p>Copyright © 2009-2013
 				   Andy Spencer &lt;andy753421@gmail.com&gt;</p>
 				<p>See individual files for licenses</p>
 
 				<h1>Source code</h1>
 				<dl>
 					<dt>Client</dt>
-					<dd><a href="vpaste?ft=sh">vpaste</a></dd>
+					<dd><a href="vpaste?ft=sh">vpaste</a>
+					    <a href="embed.js?ft=javascript">embed.js</a></dd>
 					<dt>Server</dt>
 					<dd><a href="index.cgi?ft=sh">index.cgi</a>
 					    <a href="vimrc?ft=vim">vimrc</a>
@@ -372,6 +443,8 @@ elif [ "$pathinfo" = head ]; then
 	do_cmd head
 elif [ "$pathinfo" = stat ]; then
 	do_cmd stat
+elif [ "$pathinfo" = view ]; then
+	do_view
 elif [ "$pathinfo" ]; then
 	do_print "$pathinfo"
 elif [ "$CONTENT_TYPE" ]; then
