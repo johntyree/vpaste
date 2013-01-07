@@ -256,7 +256,10 @@ function do_help {
 	uploads=$(ls -t db 2>/dev/null | head -n 5)
 	filetype=$(get_param '^(ft|filet(y(pe?)?)?)$')
 	vpaste='<a href="vpaste?ft=sh">vpaste</a>'
-	repo='https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/'
+	pileus='http://pileus.org/tools/vpaste'
+	gitweb='http://pileus.org/git/?p=vpaste'
+	mailman='http://pileus.org/mailman/listinfo/dev'
+	repo='git://pileus.org/vpaste'
 
 	respond -c text/html
 	cat <<-EOF
@@ -401,14 +404,17 @@ function do_help {
 					    <a href="blacklist?raw">blacklist</a></dd>
 					<dt>Patches</dt>
 					<dd><a href="2html.patch?ft=diff">2html.patch</a></dd>
-					<dt>Subversion</dt>
-					<dd><a href="$repo">$repo</a></dd>
+					<dt>Development</dt>
+					<dd><a href="$pileus">homepage</a>
+					    <a href="$gitweb">gitweb</a><br />
+					    <code>git clone $repo</code></dd>
 				</dl>
 
 				<h1>Bugs</h1>
 				<ul>
 					<li>Using strange filetypes (ft=2html) may result in strange output.</li>
-					<li><a href="mailto:andy753421@gmail.com?subject=vpaste bug">Other?</a></li>
+					<li>Other issues can be sent to the pileus.org
+					    <a href="$mailman">mailing list</a>.</li>
 				</ul>
 			</div>
 
