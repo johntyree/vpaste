@@ -183,7 +183,7 @@ function do_help {
 		sed -n '/^\(syntax\|manual\|synload\|2html\|colortest\|hitest\).vim$/d; s/.vim$//p' |
 		sort | uniq
 	)
-	uploads=$(ls -t db | head -n 5)
+	uploads=$(ls -t db 2>/dev/null | head -n 5)
 	filetype=$(get_param '^(ft|filet(y(pe?)?)?)$')
 	vpaste='<a href="vpaste?ft=sh">vpaste</a>'
 	repo='https://lug.rose-hulman.edu/svn/misc/trunk/htdocs/vpaste/'
