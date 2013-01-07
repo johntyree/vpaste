@@ -70,6 +70,9 @@ function message {
 function do_cmd {
 	header text/plain
 	case "$1" in
+	ls)
+		ls -t db | column
+		;;
 	head)
 		awk -v 'rows=4' -v 'cols=60' '
 			FNR==1      { gsub(/.*\//, "", FILENAME);
@@ -81,8 +84,16 @@ function do_cmd {
 			ENDFILE     { i=0; print ""  }
 		' $(ls -t db/*)
 		;;
-	ls)
-		ls -t db | column
+	stat)
+		ls -l --time-style='+%Y %m' db |
+		awk -v 'hdr=Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec' '
+			BEGIN { printf "%64s\n", hdr }
+			NR>1  { cnt[$6+0][$7+0]++ }
+			END   { for (y in cnt) {
+			          printf "%4d", y
+			          for (m=1; m<=12; m++)
+			            printf "%5s", cnt[y][m]
+			          printf "\n" } }'
 		;;
 	esac
 }
@@ -332,6 +343,7 @@ function do_help {
 				</ul>
 				<p><a href="ls">list all</a></p>
 				<p><a href="head">sample all</a></p>
+				<p><a href="stat">statistics</a></p>
 			</div>
 		</body>
 	</html>
@@ -348,6 +360,8 @@ if [ "$pathinfo" = ls ]; then
 	do_cmd ls
 elif [ "$pathinfo" = head ]; then
 	do_cmd head
+elif [ "$pathinfo" = stat ]; then
+	do_cmd stat
 elif [ "$pathinfo" ]; then
 	do_print "$pathinfo"
 elif [ "$CONTENT_TYPE" ]; then
