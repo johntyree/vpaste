@@ -1,6 +1,17 @@
-# Andy Spencer 2009-2011 - Public domain
+# Andy Spencer 2009-2012 - Public domain
 
 AddHandler cgi-script .cgi
 Options +ExecCGI
+
 RewriteEngine on
+
+RewriteCond %{HTTP_HOST} www\.vpaste\.net
+RewriteRule ^(.*)$ http://vpaste.net/$1 [R,L]
+
+RewriteCond %{HTTP_HOST} (.+)\.vpaste\.net
+RewriteRule ^(.+)$ http://vpaste.net/$1 [R,L]
+
+RewriteCond %{HTTP_HOST} (.+)\.vpaste\.net
+RewriteRule ^(.*)$ http://vpaste.net/?ft=%1 [R,L]
+
 RewriteRule ^.*$ "index.cgi"
