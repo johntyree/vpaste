@@ -112,7 +112,7 @@ function start_embed() {
 	/* Get current paste information */
 	var scripts = document.getElementsByTagName('script');
 	var script  = scripts[scripts.length-1];
-	var text    = strip_spaces(script.innerHTML);
+	var text    = strip_spaces(script.textContent);
 	var name    = 'vpaste_s' + scripts.length;
 	var regex   = /^[^?]*[?]?(([a-zA-Z0-9.]*)[?&, ]?(.*))$/;
 	var parts   = script.src.match(regex);
@@ -125,7 +125,7 @@ function start_embed() {
 	var html = document.createElement('pre');
 	html.innerHTML = 'Loading..';
 	html.className = script.className + ' vpaste ' + name;
-	document.body.appendChild(html);
+	script.parentNode.appendChild(html);
 
 	/* Query the paste */
 	if (text)
@@ -137,16 +137,19 @@ function start_embed() {
 }
 
 /* Convert all code tags to pastes */
-function format_code(type) {
-	var tags = document.getElementsByTagName('code');
+function format_code(tagName, className) {
+	if (!tagName)
+		tagName = 'code';
+	var tags = document.getElementsByTagName(tagName);
 	for (var i = 0; i < tags.length; i++) {
 		var tag = tags[i];
-		if (type && tag.className != type)
+		if (className && tag.className != className)
 			continue;
-		var name = 'vpaste_c' + i;
-		var text = strip_spaces(tag.innerHTML);
+		var name  = 'vpaste_c' + i;
+		var text  = strip_spaces(tag.textContent);
+		var query = tag.getAttribute('title');
 		tag.className     += ' ' + name;
-		query_paste('POST', vpaste+'view?'+tag.title,
+		query_paste('POST', vpaste+'view?'+query,
 				text, tag, name);
 	}
 }
