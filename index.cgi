@@ -274,22 +274,16 @@ function do_help {
 			<meta name="description" content="vpaste: Vim based pastebin" />
 			<meta name="keywords" content="vpaste,paste,pastebin,vim" />
 			<meta name="google-site-verification" content="OvHF73zD7osJ1VSq9rJxnMFlja36944ud6CiP_iXQnI" />
+			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<style type="text/css">
 				*          { margin: 0;
 				             padding: 0; }
-				body       { margin: 4em 8em 4em 8em;
-				             font-family: sans-serif; }
+				body       { font-family: sans-serif; }
 				input      { padding: 2px 6px 3px 6px; }
+				a          { text-decoration: none; }
 				/* Items */
-				textarea   { width: 100%;
-				             margin-bottom: 0.5em; }
-				.buttons   { float: left; }
-				.links     { float: right; }
-				.links *   { text-decoration: none;
-				             margin-left: 0.5em; }
+				textarea   { width: 100%; }
 				.box       { display: none;
-				             clear: both;
-				             margin-top: 2.7em;
 				             border-top: solid 1px #888; }
 				/* box contents */
 				h1         { margin-top: 1.0em;
@@ -297,8 +291,33 @@ function do_help {
 				ul,dd,dl,p { margin: 0 0 0 2em; }
 				dt         { font-weight: bold;
 				             padding: 0.5em 0 0 0; }
-				span       { font-family: monospace; }
+				.upload    { font-family: monospace; }
 				.cmds dd   { font-family: monospace; }
+			</style>
+			<style type="text/css" media="screen and (min-device-width:800px)">
+				body       { margin: 4em 8em; }
+				textarea   { margin-bottom: 0.5em; }
+				.buttons   { float: left; }
+				.links     { float: right; }
+				.links *   { margin-left: 0.5em; }
+				.box       { clear: both;
+				             margin-top: 2.7em; }
+			</style>
+			<style type="text/css" media="screen and (max-device-width:800px)">
+				textarea, input, select, .links
+				           { display: block;
+					     width: 100%;
+					     margin-bottom: 0.75em; }
+				body       { margin: 1em; }
+				textarea   { height: 17em; }
+				select     { height: 2em; }
+				input      { height: 3em; }
+				.links     { text-align: center; }
+				.links a   { margin: 0em 0.25em; }
+				#vpaste    { font-size: large; }
+				.sep       { display: block;
+				             height: 0.5em;
+					     visibility:hidden; }
 			</style>
 			<script type="text/javascript">
 				//<![CDATA[
@@ -342,7 +361,7 @@ function do_help {
 					<input type="submit" value="Paste" />
 				</div>
 				<div class="links">
-					<a href="">vpaste</a> <span>-</span>
+					<a href="" id="vpaste">vpaste</a> <span class="sep">-</span>
 					<a href="#usage"   onclick="show('usage'  )">Usage</a>
 					<a href="#devel"   onclick="show('devel'  )">Development</a>
 					<a href="#uploads" onclick="show('uploads')">Uploads</a>
@@ -424,7 +443,7 @@ function do_help {
 				<h1>Recent Uploads</h1>
 				<ul>$(for upload in ${uploads[@]}; do
 				    echo -n "<li>"
-				    echo -n "<span>$upload</span> "
+				    echo -n "<span class=\"upload\">$upload</span> "
 				    echo -n "<a href='$upload?raw'>text</a> "
 				    echo -n "<a href='$upload'>rainbow</a>"
 				    echo "</li>"
