@@ -15,7 +15,8 @@
 # Remove url codings from stdin
 function get_modeline {
 	echo "$QUERY_STRING" |
-	sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g; s/[,&?]/ /g' |
+	sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g' \
+	    -e 's/[^a-zA-Z0-9.:=_\-]/ /g' |
 	xargs echo -e
 }
 function get_param {
