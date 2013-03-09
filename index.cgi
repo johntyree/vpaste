@@ -116,7 +116,8 @@ function respond {
 function format {
 	# Create a temp file with the provided modeline
 	tmp="$(mktemp)"
-	sed "\$avim: $(get_modeline)" "$1" > "$tmp"
+	sed -e  "1ivim: $(get_modeline)" \
+	    -e "\$avim: $(get_modeline)" "$1" > "$tmp"
 
 	# Determine cache name
 	md5="$(cat index.cgi vimrc "$tmp" /usr/bin/ex | md5sum -b)"
@@ -136,7 +137,7 @@ function format {
 			'+sil! set iconstring= ruf= stl= tal=' \
 			"+sil! set titlestring=$1\ -\ vpaste.net" \
 			'+sil! set noml' \
-			'+sil! $d|'$2    \
+			'+sil! 1d|$d|'$2 \
 			'+sil! %s/\r//g' \
 			'+sil! TOhtml'   \
 			"+sav! $out"     \
