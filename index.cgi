@@ -226,8 +226,9 @@ function do_upload {
 	spam=$(echo -n "$body" | cut_file "ignoreme")
 	text=$(echo -n "$body" | cut_file "(text|x)")
 	bans=$(echo -n "$REMOTE_ADDR" | grep -f blacklist)
-	[ ! -z "$spam" ] && respond "Spam check.."
-	[ ! -z "$bans" ] && respond "You have been banned"
+	
+	[ ! -z "$spam" ] && respond -h "Status: 403 Forbidden" "Spam check.."
+	[ ! -z "$bans" ] && respond -h "Status: 403 Forbidden" "You have been banned"
 	[   -z "$text" ] && respond "No text pasted"
 
 	# Format and save message
