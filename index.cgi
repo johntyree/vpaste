@@ -232,6 +232,7 @@ function do_upload {
 	[   -z "$text" ] && respond "No text pasted"
 
 	# Format and save message
+	test -d db || mkdir db
 	output="$(mktemp db/XXXXX)"
 	cat >"$output" <<-EOF
 		vim: $(get_modeline)
