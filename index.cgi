@@ -130,8 +130,8 @@ function format {
 		# - Run ex in pty to trick it into thinking that it
 		#   has a real terminal, note that we also have to set
 		#   term=xterm-256color in vimrc
-		HOME=/home/andy \
-		/home/vpaste/bin/pty \
+		# HOME=/home/andy \
+		# /home/vpaste/bin/pty \
 		/usr/bin/ex -nXZ -i NONE -u vimrc \
 			'+sil! set fde= fdt= fex= inde= inex= key= pa= pexpr=' \
 			'+sil! set iconstring= ruf= stl= tal=' \
@@ -252,7 +252,7 @@ function do_upload {
 # Default index page
 function do_help {
 	filetypes=$(
-		ls /usr/share/vim/vim*/syntax/ /home/andy/.vim/syntax/ |
+		ls /usr/share/vim/vim*/syntax/ /home/tyree/.vim/syntax/ |
 		sed -n '/^\(syntax\|manual\|synload\|2html\|colortest\|hitest\).vim$/d; s/.vim$//p' |
 		sort | uniq
 	)

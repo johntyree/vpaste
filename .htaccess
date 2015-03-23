@@ -5,13 +5,13 @@ Options +ExecCGI
 
 RewriteEngine on
 
-RewriteCond %{HTTP_HOST} www\.vpaste\.net
-RewriteRule ^(.*)$ http://vpaste.net/$1 [R,L]
+RewriteCond %{HTTP_HOST} www\.afro\.ninja/p
+RewriteRule ^(.*)$ http://afro.ninja/p/$1 [R,L]
 
-RewriteCond %{HTTP_HOST} (.+)\.vpaste\.net
-RewriteRule ^(.+)$ http://vpaste.net/$1 [R,L]
+RewriteCond %{HTTP_HOST} (.+)\.afro\.ninja/p
+RewriteRule ^(.+)$ http://afro.ninja/p/$1 [R,L]
 
-RewriteCond %{HTTP_HOST} (.+)\.vpaste\.net
-RewriteRule ^(.*)$ http://vpaste.net/?ft=%1 [R,L]
+RewriteCond %{HTTP_HOST} (.+)\.afro\.ninja/p
+RewriteRule ^(.*)$ http://afro.ninja/p/?ft=%1 [R,L]
 
 RewriteRule ^.*$ "index.cgi"
